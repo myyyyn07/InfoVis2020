@@ -1,0 +1,74 @@
+<html>
+    <head>
+	<title>W08: task3</title>
+    </head>
+    <body style="margin:0">
+	<script src="three.min.js"></script>
+	<script src="TrackballControls.js"></script>
+	<script src="https://threejs.org/examples/js/math/Lut.js"></script>
+	<script src="https://naohisas.github.io/KVS.js/Build/KVS.min.js"></script>
+	<script src="https://naohisas.github.io/KVS.js/Build/KVS2THREE.min.js"></script>
+	<script src="https://naohisas.github.io/KVS.js/Source/KVSLobsterData.js"></script>
+	<script src="Bounds.js"></script>
+	<script src="Isosurfaces_task3.js"></script>
+	<script src="w08_ex2.js"></script>
+
+	<script type="x-shader/x-vertex" id="gouraud.vert">
+         varying vec3 point_color;
+         varying vec4 point_position;
+         varying vec3 normal_vector;
+         uniform vec3 light_position;
+         uniform vec3 camera_position;
+
+         vec3 LambertianReflection( vec3 C, vec3 L, vec3 N )
+         {
+             float ka = 0.3;
+             float kd = 0.5;
+
+             float dd = dot( N, L );
+             float Ia = ka;
+             float Id = kd * dd;
+             return C * ( Ia + Id );
+         }
+
+	  void main()
+         {
+             point_position = modelViewMatrix * vec4( position, 1.0 );
+             normal_vector = normalMatrix * normal;
+
+             vec3 C = color;
+             vec3 L = normalize( light_position - point_position.xyz );
+             vec3 N = normalize( normal_vector );
+             vec3 V = normalize( camera_position - point_position.xyz );
+
+             #if defined( Lambert )
+             point_color = LambertianReflection( C, L, N );
+             #elif defined( Phong )
+             point_color = PhongReflection( C, L, N, V );
+             #elif defined( BlinnPhong )
+             point_color = BlinnPhongReflection( C, L, N, V );
+             #elif defined( CookTrrance )
+             point_color = CookTorranceReflection( C, L, N, V );
+             #else
+             point_color = C;
+             #endif
+
+             gl_Position = projectionMatrix * point_position;
+         }
+        </script>
+
+        <script type="x-shader/x-fragment" id="gouraud.frag">
+         varying vec3 point_color;
+
+         void main()
+         {
+             gl_FragColor = vec4( point_color, 1.0 );
+         }
+        </script>
+
+
+	<script>
+	 main();
+	</script>
+    </body>
+</html>
